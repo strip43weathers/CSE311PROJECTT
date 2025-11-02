@@ -6,7 +6,7 @@ from decimal import Decimal
 # modeller
 from .models import Profile, Course, EvaluationComponent, LearningOutcome, Grade
 
-# formlarımız
+# formlar
 from .forms import EvaluationComponentForm, LearningOutcomeForm
 
 # decoratorlarımız <-- roller ile kontrol
@@ -91,7 +91,7 @@ def manage_course(request, course_id):
                         grade.score = score if score else None
                         grade.save()
                     except (ValueError, Exception):
-                        pass  # Hatalı girişi yoksay
+                        pass  # hatalı girişi yoksay
             return redirect('manage_course', course_id=course.id)
 
     # GET işlemi
