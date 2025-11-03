@@ -32,7 +32,7 @@ def user_is_instructor(function):
 def user_is_student(function):
 
     """
-    giriş yapan kullanıcının student rolüne sahip mi
+    giriş yapan kullanıcı student rolüne sahip mi
     """
 
     def wrap(request, *args, **kwargs):
@@ -41,7 +41,7 @@ def user_is_student(function):
 
         try:
             if request.user.profile.role == 'student':
-                # student ise, asıl view fonksiyonunu çalıştır
+                # student ise asıl view fonksiyonunu çalıştır
                 return function(request, *args, **kwargs)
             else:
                 # student değilse yetki yok hatası ver

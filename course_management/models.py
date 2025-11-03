@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User  # <--  size zoomda bahsettiğim djangonun kendi user modeli ama
-from django.conf import settings             #      biz bu modeli genişleteceğiz
+from django.contrib.auth.models import User     # <--  size zoomda bahsettiğim djangonun kendi
+from django.conf import settings                #      user modeli ama biz bu modeli genişleteceğiz
 
 
 class Profile(models.Model):

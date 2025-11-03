@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'course_management',   # <-- app imiz burada, şu anlık tek app imiz var
-                               # projeyi ilerlettikçe yeni app ler de ekleyeceğiz
+    'course_management',   # <-- app imiz burada, şu anlık tek app imiz var ama
+                           #     projeyi ilerlettikçe yeni app ler de ekleyeceğiz
 ]
 
 MIDDLEWARE = [
@@ -60,7 +60,7 @@ ROOT_URLCONF = 'CSE311PROJECTT.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],         #  <-- template ayarı
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],         #   <-- template ayarı
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

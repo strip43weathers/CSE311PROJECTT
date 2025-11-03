@@ -94,7 +94,7 @@ def manage_course(request, course_id):
                         pass  # hatalı girişi yoksay
             return redirect('manage_course', course_id=course.id)
 
-    # GET işlemi
+    # GET işlemleri
     eval_form = EvaluationComponentForm()
     outcome_form = LearningOutcomeForm()
 
