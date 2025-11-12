@@ -8,7 +8,7 @@ from django.contrib import messages
 from .models import Profile, Course, EvaluationComponent, LearningOutcome, Grade, User
 
 # formlar
-from .forms import EvaluationComponentForm, LearningOutcomeForm, CourseCreateForm, InstructorAssignForm
+from .forms import EvaluationComponentForm, LearningOutcomeForm, CourseCreateForm, InstructorAssignForm, StudentAssignForm
 
 # decoratorlarımız <-- roller ile kontrol
 from .decorators import user_is_instructor, user_is_student, user_is_department_head
@@ -183,7 +183,7 @@ def department_head_dashboard(request):
     """
     bölüm başkanının panelini gösterir
     tüm dersler hocalar ve öğrenciler hakkında genel bilgi sağlar
-    ders ekleme ve hoca atama işlemlerini de yapar
+    ders ekleme, hoca atama ve öğrenci atama işlemlerini de yapar
     """
 
     # formları POST verisiyle doldur (eğer POST ise) veya boş oluştur (eğer GET ise)
@@ -194,6 +194,7 @@ def department_head_dashboard(request):
             # --- YENİ DERS EKLEME İŞLEMİ
             course_form = CourseCreateForm(request.POST)
             assign_form = InstructorAssignForm()  # diğer formu boş ata
+            student_assign_form = StudentAssignForm()  # YENİ EKLENDİ - diğer formu boş ata
 
             if course_form.is_valid():
                 course_form.save()
@@ -206,6 +207,7 @@ def department_head_dashboard(request):
             # --- HOCA ATAMA İŞLEMİ
             assign_form = InstructorAssignForm(request.POST)
             course_form = CourseCreateForm()  # diğer formu boş ata
+            student_assign_form = StudentAssignForm()  # YENİ EKLENDİ - diğer formu boş ata
 
             if assign_form.is_valid():
                 course = assign_form.cleaned_data['course']
@@ -220,16 +222,39 @@ def department_head_dashboard(request):
             else:
                 messages.error(request, 'Hoca atanırken bir hata oluştu. Lütfen formu kontrol edin.')
 
+        # YENİ EKLENEN BLOK
+        elif 'submit_student_assign' in request.POST:
+            # --- ÖĞRENCİ ATAMA İŞLEMİ
+            student_assign_form = StudentAssignForm(request.POST)
+            course_form = CourseCreateForm()  # diğer formu boş ata
+            assign_form = InstructorAssignForm()  # diğer formu boş ata
+
+            if student_assign_form.is_valid():
+                course = student_assign_form.cleaned_data['course']
+                student = student_assign_form.cleaned_data['student']
+
+                # ManyToMany alanına öğrenciyi ekle
+                course.students.add(student)
+
+                messages.success(request,
+                                 f'"{student.get_full_name()}" öğrencisi "{course.course_code}" dersine başarıyla atandı.')
+                return redirect('department_head_dashboard')
+            else:
+                messages.error(request, 'Öğrenci atanırken bir hata oluştu. Lütfen formu kontrol edin.')
+        # YENİ BLOK SONU
+
         else:
             # beklenmedik bir POST durumu
             course_form = CourseCreateForm()
             assign_form = InstructorAssignForm()
+            student_assign_form = StudentAssignForm()  # YENİ EKLENDİ
 
     else:
         # --- GET İSTEĞİ
-        # her iki formu da boş olarak oluştur
+        # tüm formları boş olarak oluştur
         course_form = CourseCreateForm()
         assign_form = InstructorAssignForm()
+        student_assign_form = StudentAssignForm()  # YENİ EKLENDİ
 
     # --- VERİLERİ ÇEK
 
@@ -251,5 +276,6 @@ def department_head_dashboard(request):
         # Formları context'e ekle
         'course_form': course_form,
         'assign_form': assign_form,
+        'student_assign_form': student_assign_form,  # YENİ EKLENDİ
     }
     return render(request, 'course_management/department_head_dashboard.html', context)

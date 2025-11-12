@@ -18,7 +18,12 @@
 
     <h1>Öğrenci Paneli: Notlarım</h1>
     <p>Merhaba, {{ request.user.get_full_name }}. Kayıtlı olduğunuz dersler ve notlarınız:</p>
-    <p><a href="{% url 'logout' %}">Çıkış Yap</a></p>
+    <form method="POST" action="{% url 'logout' %}" style="display: inline; margin: 0; padding: 0;">
+        {% csrf_token %}
+        <button type="submit" style="background: none; border: none; color: #007bff; text-decoration: underline; cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;">
+            Çıkış Yap
+        </button>
+    </form>
 
     {% if not course_data %}
         <p>Henüz herhangi bir derse kayıtlı değilsiniz.</p>

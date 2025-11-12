@@ -32,10 +32,8 @@ class LearningOutcomeForm(forms.ModelForm):
         }
 
 
-# ----- YENİ EKLENEN FORMLAR
-
 class CourseCreateForm(forms.ModelForm):
-    """Bölüm başkanının yeni ders oluşturması için form"""
+    """bölüm başkanının yeni ders oluşturması için form"""
 
     class Meta:
         model = Course
@@ -48,7 +46,7 @@ class CourseCreateForm(forms.ModelForm):
 
 
 class InstructorAssignForm(forms.Form):
-    """Bölüm başkanının bir derse hoca ataması için form"""
+    """bölüm başkanının bir derse hoca ataması için form"""
 
     # tüm dersleri listeleyen bir dropdown
     course = forms.ModelChoiceField(
@@ -69,3 +67,27 @@ class InstructorAssignForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['course'].label_from_instance = lambda obj: f"{obj.course_code} - {obj.course_name}"
         self.fields['instructor'].label_from_instance = lambda obj: obj.get_full_name() or obj.username
+
+
+class StudentAssignForm(forms.Form):
+    """bölüm başkanının bir derse öğrenci ataması için form"""
+
+    # tüm dersleri listeleyen bir dropdown
+    course = forms.ModelChoiceField(
+        queryset=Course.objects.all().order_by('course_code'),
+        label="Ders Seçin",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    # sadece student rolündeki kullanıcıları listeleyen bir dropdown
+    student = forms.ModelChoiceField(
+        queryset=User.objects.filter(profile__role='student').order_by('last_name', 'first_name'),
+        label="Öğrenci Seçin",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        """Dropdown'larda daha okunaklı isimler göster"""
+        super().__init__(*args, **kwargs)
+        self.fields['course'].label_from_instance = lambda obj: f"{obj.course_code} - {obj.course_name}"
+        self.fields['student'].label_from_instance = lambda obj: obj.get_full_name() or obj.username
