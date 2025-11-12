@@ -1,5 +1,5 @@
 from django import forms
-from .models import EvaluationComponent, LearningOutcome, Course
+from .models import EvaluationComponent, LearningOutcome, Course, ProgramOutcome
 from django.contrib.auth import get_user_model
 
 # user modelini al
@@ -63,7 +63,7 @@ class InstructorAssignForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        """Dropdown'larda daha okunaklı isimler göster"""
+        """dropdownlarda daha okunaklı isimler göster"""
         super().__init__(*args, **kwargs)
         self.fields['course'].label_from_instance = lambda obj: f"{obj.course_code} - {obj.course_name}"
         self.fields['instructor'].label_from_instance = lambda obj: obj.get_full_name() or obj.username
@@ -87,7 +87,7 @@ class StudentAssignForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        """dropdown'larda daha okunaklı isimler göster"""
+        """dropdownlarda daha okunaklı isimler göster"""
         super().__init__(*args, **kwargs)
         self.fields['course'].label_from_instance = lambda obj: f"{obj.course_code} - {obj.course_name}"
         self.fields['student'].label_from_instance = lambda obj: obj.get_full_name() or obj.username
@@ -102,6 +102,21 @@ class SyllabusForm(forms.ModelForm):
             'syllabus': 'Syllabus Dosyası Yükle'
         }
         widgets = {
-            # FileInput widget'ı kullanalım
+            # FileInput widgetı kullanıyoruz dosyanın türünü kontrol etmek için, bu da djangonun kendi özelliği
             'syllabus': forms.FileInput(attrs={'class': 'form-control-file'}),
+        }
+
+
+class ProgramOutcomeForm(forms.ModelForm):
+    """bölüm başkanının program çıktısı eklemesi için form"""
+    class Meta:
+        model = ProgramOutcome
+        fields = ['code', 'description']
+        labels = {
+            'code': 'Çıktı Kodu (örn: PO-1, PO-2)',
+            'description': 'Program Çıktısının Açıklaması',
+        }
+        widgets = {
+            'code': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }

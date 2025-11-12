@@ -15,3 +15,6 @@ __pycache__/
 
 # gizli ayarlar
 .env
+
+# medya dosyası
+media/

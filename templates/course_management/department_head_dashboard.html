@@ -23,7 +23,7 @@
         .form-section { flex: 1; min-width: 300px; background-color: #fcfcfc; border: 1px solid #eee; padding: 20px; border-radius: 5px; }
         .form-section form p { margin-bottom: 15px; }
         .form-section label { display: block; font-weight: bold; margin-bottom: 5px; }
-        .form-section input[type="text"], .form-section select {
+        .form-section input[type="text"], .form-section select, .form-section textarea {
             width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;
         }
         button { background-color: #007bff; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; font-size: 1em; }
@@ -104,7 +104,17 @@
                 <button type="submit" name="submit_student_assign">Öğrenciyi Ata</button>
             </form>
         </div>
+
+        <div class="form-section">
+            <h3>Yeni Program Çıktısı Ekle</h3>
+            <form method="POST">
+                {% csrf_token %}
+                {{ program_outcome_form.as_p }}
+                <button type="submit" name="submit_program_outcome">Program Çıktısı Ekle</button>
+            </form>
         </div>
+
+    </div>
 
     <hr>
 
@@ -131,6 +141,19 @@
     </div>
 
     <div class="list-section">
+        <h2>Program Çıktıları</h2>
+        <ul>
+            {% for po in all_program_outcomes %}
+                <li>
+                    <strong>{{ po.code }}:</strong> {{ po.description }}
+                </li>
+            {% empty %}
+                <li>Sistemde kayıtlı program çıktısı bulunmamaktadır.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="list-section">
         <h2>Öğretim Görevlileri ({{ instructor_count }})</h2>
         <ul>
             {% for instructor in all_instructors %}
@@ -145,7 +168,18 @@
         <h2>Öğrenciler ({{ student_count }})</h2>
         <ul>
             {% for student in all_students %}
-                <li>{{ student.get_full_name }} ({{ student.username }})</li>
+                <li>
+                    <strong>{{ student.get_full_name }} ({{ student.username }})</strong>
+                    
+                    <div style="margin-top: 5px; font-size: 0.9em; color: #555;">
+                        <strong>Kayıtlı Dersler:</strong>
+                        {% for course in student.enrolled_courses.all %}
+                            {{ course.course_code }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            (Henüz bir derse kayıtlı değil)
+                        {% endfor %}
+                    </div>
+                </li>
             {% empty %}
                 <li>Sistemde kayıtlı öğrenci bulunmamaktadır.</li>
             {% endfor %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Course, EvaluationComponent, LearningOutcome, Grade
+from .models import Profile, Course, EvaluationComponent, LearningOutcome, Grade, ProgramOutcome
 
 
 # admin paneli
@@ -14,3 +14,4 @@ admin.site.register(Profile)
 admin.site.register(EvaluationComponent)
 admin.site.register(LearningOutcome)
 admin.site.register(Grade)
+admin.site.register(ProgramOutcome)

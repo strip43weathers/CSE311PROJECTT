@@ -105,5 +105,16 @@
 
     {% endfor %}
 
-</body>
+    {% if all_program_outcomes %}
+        <hr>
+        <h3>Bölüm Program Çıktıları (Mezuniyet Yetkinlikleri)</h3>
+        <ol style="padding-left: 20px;">
+            {% for po in all_program_outcomes %}
+                <li style="margin-bottom: 10px;">
+                    <strong>{{ po.code }}:</strong> {{ po.description }}
+                </li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+    </body>
 </html>

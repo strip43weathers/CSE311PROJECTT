@@ -115,3 +115,18 @@ class Grade(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.component.name}: {self.score}"
+
+
+class ProgramOutcome(models.Model):
+    """bölüm program çıktısı"""
+    code = models.CharField(max_length=10, unique=True, verbose_name="Çıktı Kodu (örn: PO-1)")
+    description = models.TextField(verbose_name="Program Çıktısı Açıklaması")
+
+    class Meta:
+        verbose_name = "Program Çıktısı"
+        verbose_name_plural = "Program Çıktıları"
+        ordering = ['code']  # koda göre sırala
+
+    def __str__(self):
+        # açıklamanın ilk 50 karakterini göster
+        return f"{self.code}: {self.description[:50]}..."
