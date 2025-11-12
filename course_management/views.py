@@ -8,7 +8,7 @@ from django.contrib import messages
 from .models import Profile, Course, EvaluationComponent, LearningOutcome, Grade, User
 
 # formlar
-from .forms import EvaluationComponentForm, LearningOutcomeForm, CourseCreateForm, InstructorAssignForm, StudentAssignForm
+from .forms import EvaluationComponentForm, LearningOutcomeForm, CourseCreateForm, InstructorAssignForm, StudentAssignForm, SyllabusForm
 
 # decoratorlarımız <-- roller ile kontrol
 from .decorators import user_is_instructor, user_is_student, user_is_department_head
@@ -53,36 +53,66 @@ def instructor_dashboard(request):
 @user_is_instructor
 def manage_course(request, course_id):
     """
-    hocanın ders yönettiği sayfa
+    hocanın ders yönettiği sayfa (ÇOKLU FORM YÖNETİMİ İÇİN GÜNCELLENDİ)
     """
-
     course = get_object_or_404(Course, id=course_id, instructors=request.user)
     components = EvaluationComponent.objects.filter(course=course).order_by('id')
     outcomes = LearningOutcome.objects.filter(course=course)
     students = course.students.all().order_by('last_name', 'first_name')
 
-    # POST işlemleri
+    # --- YENİ YAPI: Formları en başta (GET haliyle) tanımla ---
+    # Bu formlar, ya GET isteği için boş/dolu olarak kullanılır
+    # ya da POST'ta hata olursa, hatalı form verisiyle değiştirilir.
+
+    # instance=course -> mevcut syllabus'u göstermek için
+    syllabus_form = SyllabusForm(instance=course)
+    eval_form = EvaluationComponentForm()
+    outcome_form = LearningOutcomeForm()
+
+    # --- POST İşlemleri ---
     if request.method == 'POST':
+
+        # Hangi formun gönderildiğini 'name' ile kontrol et
+
         if 'submit_evaluation' in request.POST:
+            # Sadece gönderilen formu POST verisiyle doldur
             eval_form = EvaluationComponentForm(request.POST)
             if eval_form.is_valid():
                 evaluation = eval_form.save(commit=False)
                 evaluation.course = course
                 evaluation.save()
+                messages.success(request, 'Değerlendirme bileşeni başarıyla eklendi.')
                 return redirect('manage_course', course_id=course.id)
+            # Hata varsa, sayfa yeniden render edilecek (en altta)
+            # ve 'eval_form' hataları gösterecek.
 
         elif 'submit_outcome' in request.POST:
+            # Sadece gönderilen formu doldur
             outcome_form = LearningOutcomeForm(request.POST)
             if outcome_form.is_valid():
                 outcome = outcome_form.save(commit=False)
                 outcome.course = course
                 outcome.save()
+                messages.success(request, 'Öğrenim çıktısı başarıyla eklendi.')
                 return redirect('manage_course', course_id=course.id)
+            # Hata varsa, sayfa 'outcome_form' ile render edilecek.
+
+        elif 'submit_syllabus' in request.POST:
+            # Sadece gönderilen formu (dosya dahil) yeniden doldur
+            syllabus_form = SyllabusForm(request.POST, request.FILES, instance=course)
+            if syllabus_form.is_valid():
+                syllabus_form.save()
+                messages.success(request, 'Syllabus dosyası başarıyla güncellendi.')
+                return redirect('manage_course', course_id=course.id)
+            else:
+                # Dosya geçersizse (örn. dosya seçilmedi, yanlış format)
+                # hata mesajı ver ve sayfayı 'syllabus_form'un hatalarıyla render et.
+                messages.error(request, 'Dosya yüklenirken bir hata oluştu. Lütfen geçerli bir dosya seçin.')
 
         elif 'submit_grades' in request.POST:
-            for key, value in request.POST.items():
-                if key.startswith('grade_'):
-                    try:
+            try:
+                for key, value in request.POST.items():
+                    if key.startswith('grade_'):
                         _, student_id, component_id = key.split('_')
                         score = value
                         grade, created = Grade.objects.get_or_create(
@@ -91,13 +121,13 @@ def manage_course(request, course_id):
                         )
                         grade.score = score if score else None
                         grade.save()
-                    except (ValueError, Exception):
-                        pass  # hatalı girişi yoksay
+                messages.success(request, 'Notlar başarıyla kaydedildi.')
+            except (ValueError, Exception) as e:
+                messages.error(request, f'Notları kaydederken bir hata oluştu: {e}')
+                pass  # Hata olsa bile sayfayı yenile
             return redirect('manage_course', course_id=course.id)
 
-    # GET işlemleri
-    eval_form = EvaluationComponentForm()
-    outcome_form = LearningOutcomeForm()
+    # --- GET İşlemleri (veya POST'ta hata olduysa sayfanın yeniden render edilmesi) ---
 
     # tüm notları tek seferde çekme
     all_grades = Grade.objects.filter(component__in=components, student__in=students)
@@ -114,7 +144,6 @@ def manage_course(request, course_id):
             'grades_list': []
         }
         for component in components:
-            # notu mapten al yoksa None
             score = grade_map.get((student.id, component.id))
             row['grades_list'].append({
                 'component_id': component.id,
@@ -124,13 +153,19 @@ def manage_course(request, course_id):
 
     context = {
         'course': course,
-        'components': components,  # başlık
+        'components': components,
         'outcomes': outcomes,
+        'students': students,
+        'student_grade_rows': student_grade_rows,
+
+        # Formları (hata varsa hatalı, yoksa boş/instance) context'e yolla
         'eval_form': eval_form,
         'outcome_form': outcome_form,
-        'students': students,  # öğrenci sayısını kontrol için
-        'student_grade_rows': student_grade_rows,  # not tablosu için
+        'syllabus_form': syllabus_form,
     }
+
+    # Bu render, GET isteği için VEYA
+    # POST'ta validasyon hatası olursa (redirect OLMADIĞINDA) çalışır.
     return render(request, 'course_management/course_manage_detail.html', context)
 
 

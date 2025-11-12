@@ -41,7 +41,12 @@ class Course(models.Model):
         blank=True  # bir derste hiç öğrenci olmayabilir
     )
 
-    syllabus = models.TextField(blank=True, null=True, verbose_name="Ders Syllabus")
+    syllabus = models.FileField(
+        upload_to='course_syllabus/',  # dosyalar 'media/course_syllabus/' klasörüne yüklenecek
+        blank=True,
+        null=True,
+        verbose_name="Ders Syllabus Dosyası (.pdf, .docx vb.)"
+    )
 
     def __str__(self):
         return f"{self.course_code} - {self.course_name}"

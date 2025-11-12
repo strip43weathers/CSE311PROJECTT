@@ -91,3 +91,17 @@ class StudentAssignForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['course'].label_from_instance = lambda obj: f"{obj.course_code} - {obj.course_name}"
         self.fields['student'].label_from_instance = lambda obj: obj.get_full_name() or obj.username
+
+
+class SyllabusForm(forms.ModelForm):
+    """hocanın ders syllabus dosyasını yüklemesi için form"""
+    class Meta:
+        model = Course
+        fields = ['syllabus']
+        labels = {
+            'syllabus': 'Syllabus Dosyası Yükle'
+        }
+        widgets = {
+            # FileInput widget'ı kullanalım
+            'syllabus': forms.FileInput(attrs={'class': 'form-control-file'}),
+        }
